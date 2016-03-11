@@ -1,0 +1,9 @@
+[submodule "library/intellij-library-annotations"]
+	path = library/intellij-library-annotations
+	url = https://github.com/raphaelcohn/intellij-library-annotations.git
+[submodule ".idea"]
+	path = .idea
+	url = https://github.com/raphaelcohn/intellij-project-template.git
+[submodule "library/annotations"]
+	path = library/annotations
+	url = https://github.com/raphaelcohn/intellij-library-annotations.git
