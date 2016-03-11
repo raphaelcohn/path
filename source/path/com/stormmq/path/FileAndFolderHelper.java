@@ -1,5 +1,6 @@
 package com.stormmq.path;
 
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -47,9 +48,15 @@ public final class FileAndFolderHelper
 		return filePathDescendingFromRootPath.subpath(size, filePathDescendingFromRootPath.getNameCount());
 	}
 
-	public static boolean hasFileExtension(@NotNull final Path path, @NotNull final String fileExtension)
+	public static boolean hasFileExtension(@NotNull final Path path, @NonNls @NotNull final String fileExtension)
 	{
-		return path.getFileName().toString().endsWith('.' + fileExtension);
+		final String fileName = path.getFileName().toString();
+		return hasFileExtension(fileExtension, fileName);
+	}
+
+	public static boolean hasFileExtension(@NotNull final String fileExtension, final String fileName)
+	{
+		return fileName.endsWith('.' + fileExtension);
 	}
 
 	public static void removeAllFoldersAndFilesBelowPath(@NotNull final Path path)
