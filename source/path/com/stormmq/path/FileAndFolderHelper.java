@@ -51,10 +51,10 @@ public final class FileAndFolderHelper
 	public static boolean hasFileExtension(@NotNull final Path path, @NonNls @NotNull final String fileExtension)
 	{
 		final String fileName = path.getFileName().toString();
-		return hasFileExtension(fileExtension, fileName);
+		return hasFileExtension(fileName, fileExtension);
 	}
 
-	public static boolean hasFileExtension(@NotNull final String fileExtension, final String fileName)
+	public static boolean hasFileExtension(@NotNull final String fileName, @NotNull final String fileExtension)
 	{
 		return fileName.endsWith('.' + fileExtension);
 	}
