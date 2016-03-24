@@ -4,10 +4,11 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
-import java.util.zip.ZipFile;
+import java.util.zip.*;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.String.format;
@@ -15,12 +16,109 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.Files.deleteIfExists;
 import static java.nio.file.Files.walkFileTree;
+import static java.util.Arrays.copyOf;
 import static java.util.EnumSet.of;
 import static java.util.Locale.ENGLISH;
 
 public final class FileAndFolderHelper
 {
 	@NotNull public static final EnumSet<FileVisitOption> FollowLinks = of(FOLLOW_LINKS);
+	@NotNull public static final byte[] Empty = {};
+
+	@NotNull
+	public static byte[] retrieveAllBytesForUnknownInputStreamSize(@NotNull final ZipFile zipFile, @NotNull final ZipEntry zipEntry, final int bufferSize) throws IOException, ZipException
+	{
+		// Most java class files are well under 1Mb and growth is x4 (<< 2)
+		try (final InputStream inputStream = zipFile.getInputStream(zipEntry))
+		{
+			return retrieveAllBytesForUnknownInputStreamSize(inputStream, bufferSize);
+		}
+	}
+
+	@NotNull
+	public static byte[] retrieveAllBytesForUnknownInputStreamSize(@NotNull final InputStream inputStream, final int bufferSize) throws IOException
+	{
+		// Not the most efficient mechanism, as the buffer is copied on growth rather than a sequence of buffers being allocated and then all copied into one final buffer
+
+		long totalBytesRead = 0;
+		byte[] buffer = new byte[bufferSize];
+
+		int offset = 0;
+		int remainingBufferCapacity = buffer.length;
+		do
+		{
+			final int bytesRead = inputStream.read(buffer, offset, remainingBufferCapacity);
+			if (bytesRead == -1)
+			{
+				break;
+			}
+			totalBytesRead += bytesRead;
+			if (totalBytesRead > Integer.MAX_VALUE)
+			{
+				throw new IOException("2Gb limit reached");
+			}
+			offset += bytesRead;
+			remainingBufferCapacity -= bytesRead;
+			if (remainingBufferCapacity == 0)
+			{
+				remainingBufferCapacity = buffer.length << 2;
+				offset = 0;
+				buffer = copyOf(buffer, remainingBufferCapacity);
+			}
+		}
+		while (true);
+
+		if (totalBytesRead == 0)
+		{
+			return Empty;
+		}
+
+		if (totalBytesRead == buffer.length)
+		{
+			return buffer;
+		}
+
+		//noinspection NumericCastThatLosesPrecision
+		return copyOf(buffer, (int) totalBytesRead);
+	}
+
+	@NotNull
+	public static byte[] retrieveAllBytesForKnownInputStreamSize(@NotNull final ZipFile zipFile, @NotNull final ZipEntry zipEntry, final int length) throws IOException
+	{
+		if (length == 0)
+		{
+			return Empty;
+		}
+		try (final InputStream inputStream = zipFile.getInputStream(zipEntry))
+		{
+			return retrieveAllBytesForKnownInputStreamSize(inputStream, length);
+		}
+	}
+
+	@NotNull
+	public static byte[] retrieveAllBytesForKnownInputStreamSize(@NotNull final InputStream inputStream, final int length) throws IOException
+	{
+		if (length == 0)
+		{
+			return Empty;
+		}
+		final byte[] all = new byte[length];
+		int offset = 0;
+		int remaining = length;
+		do
+		{
+			final int bytesRead = inputStream.read(all, offset, remaining);
+			if (bytesRead == -1)
+			{
+				break;
+			}
+			offset += bytesRead;
+			remaining -= bytesRead;
+
+		}
+		while (remaining != 0);
+		return all;
+	}
 
 	private FileAndFolderHelper()
 	{
