@@ -14,7 +14,8 @@ public class IsFileTypeFilter extends AbstractDirectoryFilter
 	@NotNull @NonNls public static final String java = "java";
 	@NotNull @NonNls public static final String _class = "class";
 	@NotNull public static final IsFileTypeFilter IsJavaFile = new IsFileTypeFilter(java);
-	@SuppressWarnings("DuplicateStringLiteralInspection") @NotNull public static final IsFileTypeFilter IsJavaOrClassFile = new IsFileTypeFilter(java, "class");
+	@NotNull public static final IsFileTypeFilter IsClassFile = new IsFileTypeFilter(_class);
+	@SuppressWarnings("DuplicateStringLiteralInspection") @NotNull public static final IsFileTypeFilter IsJavaOrClassFile = new IsFileTypeFilter(java, _class);
 	@NotNull public static final IsFileTypeFilter IsJarOrZipFile = new IsFileTypeFilter("jar", "zip");
 
 	public static boolean isJavaFile(@NonNls @NotNull final String name)
