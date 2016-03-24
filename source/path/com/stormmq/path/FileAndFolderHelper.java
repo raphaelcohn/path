@@ -4,11 +4,9 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static java.lang.Integer.MAX_VALUE;
@@ -96,34 +94,6 @@ public final class FileAndFolderHelper
 		{
 			throw new IllegalStateException(format(ENGLISH, "Could not remove all folders and files below '%1$s' because of '%2$s'", path.toString(), e.getMessage()), e);
 		}
-	}
-
-	@NotNull
-	public static byte[] getZipEntryBytes(@NotNull final ZipFile zipFile, @NotNull final ZipEntry zipEntry)
-	{
-		final byte[] code;
-		try (final InputStream inputStream = zipFile.getInputStream(zipEntry))
-		{
-			final int length = (int) zipEntry.getSize();
-			code = new byte[length];
-			int offset = 0;
-			int remaining = length;
-			while (remaining > 0)
-			{
-				final int read = inputStream.read(code, offset, remaining);
-				if (read < 0)
-				{
-					break;
-				}
-				offset = offset + read;
-				remaining = remaining - read;
-			}
-		}
-		catch (final IOException e)
-		{
-			throw new IllegalStateException(format(ENGLISH, "Could not read jar / zip entry '1$s' in archive '%2$s' because of '%3$s'", zipEntry.getName(), zipFile.getName(), e.getMessage()), e);
-		}
-		return code;
 	}
 
 	@NotNull
