@@ -26,11 +26,40 @@ public final class FileAndFolderHelper
 	{
 	}
 
-	public static void walkTreeFollowingSymlinks(@NotNull final Path rootPath, @NotNull final SimpleFileVisitor<Path> simpleFileVisitor)
+	public static void walkTreeFollowingSymlinks(@NotNull final Path rootPath, @NotNull final FileVisitor<Path> fileVisitor)
 	{
 		try
 		{
-			walkFileTree(rootPath, FollowLinks, MAX_VALUE, simpleFileVisitor);
+			walkFileTree(rootPath, FollowLinks, MAX_VALUE, new FileVisitor<Path>()
+			{
+				@Override
+				public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException
+				{
+					return fileVisitor.preVisitDirectory(dir, attrs);
+				}
+
+				@Override
+				public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
+				{
+					return fileVisitor.visitFile(file, attrs);
+				}
+
+				@Override
+				public FileVisitResult visitFileFailed(final Path file, final IOException exc) throws IOException
+				{
+					if (exc instanceof FileSystemLoopException)
+					{
+						return CONTINUE;
+					}
+					return fileVisitor.visitFileFailed(file, exc);
+				}
+
+				@Override
+				public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException
+				{
+					return fileVisitor.postVisitDirectory(dir, exc);
+				}
+			});
 		}
 		catch (final IOException e)
 		{
