@@ -1,10 +1,10 @@
 package com.stormmq.path;
 
-import com.stormmq.string.Api;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 
+@SuppressWarnings("InterfaceNeverImplemented")
 @FunctionalInterface
 public interface PathUser
 {

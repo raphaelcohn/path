@@ -1,5 +1,6 @@
 package com.stormmq.path;
 
+import com.stormmq.java.parsing.utilities.ReservedIdentifiers;
 import com.stormmq.string.Api;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +14,7 @@ import static java.nio.file.Files.isRegularFile;
 public final class IsFileTypeFilter extends AbstractDirectoryFilter
 {
 	@NotNull @NonNls private static final String java = "java";
-	@NotNull @NonNls private static final String _class = "class";
+	@NotNull @NonNls private static final String _class = ReservedIdentifiers._class;
 	@Api @NotNull public static final IsFileTypeFilter IsJavaFile = new IsFileTypeFilter(java);
 	@NotNull public static final IsFileTypeFilter IsClassFile = new IsFileTypeFilter(_class);
 	@Api @NotNull public static final IsFileTypeFilter IsJavaOrClassFile = new IsFileTypeFilter(java, _class);
