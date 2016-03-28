@@ -191,7 +191,7 @@ public final class FileAndFolderHelper
 			walkFileTree(path, new FileVisitor<Path>()
 			{
 				@Override
-				public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException
+				public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs)
 				{
 					return CONTINUE;
 				}
@@ -204,7 +204,7 @@ public final class FileAndFolderHelper
 				}
 
 				@Override
-				public FileVisitResult visitFileFailed(final Path file, final IOException exc) throws IOException
+				public FileVisitResult visitFileFailed(final Path file, final IOException exc)
 				{
 					throw new IllegalStateException(format(ENGLISH, "Could not visit file '%1$s' because of '%2$s'", file.toString(), exc.getMessage()), exc);
 				}
