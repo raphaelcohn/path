@@ -10,23 +10,22 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
 import java.util.zip.*;
 
+import static com.stormmq.string.Formatting.format;
 import static java.lang.Integer.MAX_VALUE;
-import static java.lang.String.format;
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.Files.deleteIfExists;
 import static java.nio.file.Files.walkFileTree;
 import static java.util.Arrays.copyOf;
 import static java.util.EnumSet.of;
-import static java.util.Locale.ENGLISH;
 
 public final class FileAndFolderHelper
 {
 	@NotNull public static final EnumSet<FileVisitOption> FollowLinks = of(FOLLOW_LINKS);
-	@NotNull public static final byte[] Empty = {};
+	@NotNull private static final byte[] Empty = {};
 
 	@NotNull
-	public static byte[] retrieveAllBytesForUnknownInputStreamSize(@NotNull final ZipFile zipFile, @NotNull final ZipEntry zipEntry, final int bufferSize) throws IOException, ZipException
+	public static byte[] retrieveAllBytesForUnknownInputStreamSize(@NotNull final ZipFile zipFile, @NotNull final ZipEntry zipEntry, final int bufferSize) throws IOException
 	{
 		// Most java class files are well under 1Mb and growth is x4 (<< 2)
 		try (final InputStream inputStream = zipFile.getInputStream(zipEntry))
@@ -53,7 +52,7 @@ public final class FileAndFolderHelper
 				break;
 			}
 			totalBytesRead += bytesRead;
-			if (totalBytesRead > Integer.MAX_VALUE)
+			if (totalBytesRead > MAX_VALUE)
 			{
 				throw new IOException("2Gb limit reached");
 			}
@@ -206,7 +205,7 @@ public final class FileAndFolderHelper
 				@Override
 				public FileVisitResult visitFileFailed(final Path file, final IOException exc)
 				{
-					throw new IllegalStateException(format(ENGLISH, "Could not visit file '%1$s' because of '%2$s'", file.toString(), exc.getMessage()), exc);
+					throw new IllegalStateException(format("Could not visit file '%1$s' because of '%2$s'", file.toString(), exc.getMessage()), exc);
 				}
 
 				@Override
@@ -219,7 +218,7 @@ public final class FileAndFolderHelper
 		}
 		catch (final IOException e)
 		{
-			throw new IllegalStateException(format(ENGLISH, "Could not remove all folders and files below '%1$s' because of '%2$s'", path.toString(), e.getMessage()), e);
+			throw new IllegalStateException(format("Could not remove all folders and files below '%1$s' because of '%2$s'", path.toString(), e.getMessage()), e);
 		}
 	}
 
