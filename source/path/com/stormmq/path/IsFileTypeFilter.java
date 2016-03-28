@@ -1,5 +1,6 @@
 package com.stormmq.path;
 
+import com.stormmq.string.Api;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,13 +10,13 @@ import static com.stormmq.path.FileAndFolderHelper.hasFileExtension;
 import static java.nio.file.Files.isReadable;
 import static java.nio.file.Files.isRegularFile;
 
-public class IsFileTypeFilter extends AbstractDirectoryFilter
+public final class IsFileTypeFilter extends AbstractDirectoryFilter
 {
-	@NotNull @NonNls public static final String java = "java";
-	@NotNull @NonNls public static final String _class = "class";
-	@NotNull public static final IsFileTypeFilter IsJavaFile = new IsFileTypeFilter(java);
+	@NotNull @NonNls private static final String java = "java";
+	@NotNull @NonNls private static final String _class = "class";
+	@Api @NotNull public static final IsFileTypeFilter IsJavaFile = new IsFileTypeFilter(java);
 	@NotNull public static final IsFileTypeFilter IsClassFile = new IsFileTypeFilter(_class);
-	@SuppressWarnings("DuplicateStringLiteralInspection") @NotNull public static final IsFileTypeFilter IsJavaOrClassFile = new IsFileTypeFilter(java, _class);
+	@Api @NotNull public static final IsFileTypeFilter IsJavaOrClassFile = new IsFileTypeFilter(java, _class);
 	@NotNull public static final IsFileTypeFilter IsJarOrZipFile = new IsFileTypeFilter("jar", "zip");
 
 	public static boolean isJavaFile(@NonNls @NotNull final String name)
@@ -30,13 +31,13 @@ public class IsFileTypeFilter extends AbstractDirectoryFilter
 
 	@NotNull private final String[] fileExtensions;
 
-	public IsFileTypeFilter(@NonNls @NotNull final String... fileExtensions)
+	private IsFileTypeFilter(@NonNls @NotNull final String... fileExtensions)
 	{
 		this.fileExtensions = fileExtensions;
 	}
 
 	@Override
-	public final boolean accept(@NotNull final Path entry)
+	public boolean accept(@NotNull final Path entry)
 	{
 		for (final String fileExtension : fileExtensions)
 		{

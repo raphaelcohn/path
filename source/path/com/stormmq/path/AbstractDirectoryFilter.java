@@ -1,5 +1,6 @@
 package com.stormmq.path;
 
+import com.stormmq.string.Api;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ public abstract class AbstractDirectoryFilter implements Filter<Path>
 	@Override
 	public abstract boolean accept(@NotNull final Path entry);
 
+	@Api
 	public final void filter(@NotNull final Path folderPath, @NotNull final PathUser pathUser) throws IOException
 	{
 		if (isReadable(folderPath) && isDirectory(folderPath))

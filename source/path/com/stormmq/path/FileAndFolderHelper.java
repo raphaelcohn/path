@@ -1,7 +1,6 @@
 package com.stormmq.path;
 
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +34,7 @@ public final class FileAndFolderHelper
 	}
 
 	@NotNull
-	public static byte[] retrieveAllBytesForUnknownInputStreamSize(@NotNull final InputStream inputStream, final int bufferSize) throws IOException
+	private static byte[] retrieveAllBytesForUnknownInputStreamSize(@NotNull final InputStream inputStream, final int bufferSize) throws IOException
 	{
 		// Not the most efficient mechanism, as the buffer is copied on growth rather than a sequence of buffers being allocated and then all copied into one final buffer
 
@@ -95,7 +94,7 @@ public final class FileAndFolderHelper
 	}
 
 	@NotNull
-	public static byte[] retrieveAllBytesForKnownInputStreamSize(@NotNull final InputStream inputStream, final int length) throws IOException
+	private static byte[] retrieveAllBytesForKnownInputStreamSize(@NotNull final InputStream inputStream, final int length) throws IOException
 	{
 		if (length == 0)
 		{
@@ -121,47 +120,6 @@ public final class FileAndFolderHelper
 
 	private FileAndFolderHelper()
 	{
-	}
-
-	public static void walkTreeFollowingSymlinks(@NotNull final Path rootPath, @NotNull final FileVisitor<Path> fileVisitor)
-	{
-		try
-		{
-			walkFileTree(rootPath, FollowLinks, MAX_VALUE, new FileVisitor<Path>()
-			{
-				@Override
-				public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException
-				{
-					return fileVisitor.preVisitDirectory(dir, attrs);
-				}
-
-				@Override
-				public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
-				{
-					return fileVisitor.visitFile(file, attrs);
-				}
-
-				@Override
-				public FileVisitResult visitFileFailed(final Path file, final IOException exc) throws IOException
-				{
-					if (exc instanceof FileSystemLoopException)
-					{
-						return CONTINUE;
-					}
-					return fileVisitor.visitFileFailed(file, exc);
-				}
-
-				@Override
-				public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException
-				{
-					return fileVisitor.postVisitDirectory(dir, exc);
-				}
-			});
-		}
-		catch (final IOException e)
-		{
-			throw new IllegalStateException("Could not walk tree", e);
-		}
 	}
 
 	// Only works if is an exact subset
@@ -190,26 +148,30 @@ public final class FileAndFolderHelper
 			walkFileTree(path, new FileVisitor<Path>()
 			{
 				@Override
-				public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs)
+				public FileVisitResult preVisitDirectory(@NotNull final Path dir, @NotNull final BasicFileAttributes basicFileAttributes)
 				{
 					return CONTINUE;
 				}
 
 				@Override
-				public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException
+				public FileVisitResult visitFile(@NotNull final Path file, @NotNull final BasicFileAttributes basicFileAttributes) throws IOException
 				{
 					deleteIfExists(file);
 					return CONTINUE;
 				}
 
 				@Override
-				public FileVisitResult visitFileFailed(final Path file, final IOException exc)
+				public FileVisitResult visitFileFailed(@Nullable final Path file, @Nullable final IOException exc)
 				{
-					throw new IllegalStateException(format("Could not visit file '%1$s' because of '%2$s'", file.toString(), exc.getMessage()), exc);
+					if (file != null && exc != null)
+					{
+						throw new IllegalStateException(format("Could not visit file '%1$s' because of '%2$s'", file.toString(), exc.getMessage()), exc);
+					}
+					return CONTINUE;
 				}
 
 				@Override
-				public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException
+				public FileVisitResult postVisitDirectory(@NotNull final Path dir, @Nullable final IOException exc) throws IOException
 				{
 					deleteIfExists(dir);
 					return CONTINUE;
@@ -220,11 +182,5 @@ public final class FileAndFolderHelper
 		{
 			throw new IllegalStateException(format("Could not remove all folders and files below '%1$s' because of '%2$s'", path.toString(), e.getMessage()), e);
 		}
-	}
-
-	@NotNull
-	public static String getFilePathName(@NotNull final ZipFile zipFile, @NotNull final String name)
-	{
-		return zipFile.getName() + "!/" + name;
 	}
 }
