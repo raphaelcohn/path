@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.EnumSet;
+import java.util.*;
 import java.util.zip.*;
 
 import static com.stormmq.string.Formatting.format;
@@ -20,7 +20,7 @@ import static java.util.EnumSet.of;
 
 public final class FileAndFolderHelper
 {
-	@NotNull public static final EnumSet<FileVisitOption> FollowLinks = of(FOLLOW_LINKS);
+	@NotNull public static final Set<FileVisitOption> FollowLinks = of(FOLLOW_LINKS);
 	@NotNull private static final byte[] Empty = {};
 
 	@NotNull
@@ -145,42 +145,47 @@ public final class FileAndFolderHelper
 	{
 		try
 		{
-			walkFileTree(path, new FileVisitor<Path>()
-			{
-				@Override
-				public FileVisitResult preVisitDirectory(@NotNull final Path dir, @NotNull final BasicFileAttributes basicFileAttributes)
-				{
-					return CONTINUE;
-				}
-
-				@Override
-				public FileVisitResult visitFile(@NotNull final Path file, @NotNull final BasicFileAttributes basicFileAttributes) throws IOException
-				{
-					deleteIfExists(file);
-					return CONTINUE;
-				}
-
-				@Override
-				public FileVisitResult visitFileFailed(@Nullable final Path file, @Nullable final IOException exc)
-				{
-					if (file != null && exc != null)
-					{
-						throw new IllegalStateException(format("Could not visit file '%1$s' because of '%2$s'", file.toString(), exc.getMessage()), exc);
-					}
-					return CONTINUE;
-				}
-
-				@Override
-				public FileVisitResult postVisitDirectory(@NotNull final Path dir, @Nullable final IOException exc) throws IOException
-				{
-					deleteIfExists(dir);
-					return CONTINUE;
-				}
-			});
+			walkFileTree(path, new DeletingFileVisitor());
 		}
 		catch (final IOException e)
 		{
 			throw new IllegalStateException(format("Could not remove all folders and files below '%1$s' because of '%2$s'", path.toString(), e.getMessage()), e);
+		}
+	}
+
+	private static final class DeletingFileVisitor implements FileVisitor<Path>
+	{
+		@Override
+		public FileVisitResult preVisitDirectory(@NotNull final Path dir, @NotNull final BasicFileAttributes basicFileAttributes)
+		{
+			return CONTINUE;
+		}
+
+		@Override
+		public FileVisitResult visitFile(@NotNull final Path file, @NotNull final BasicFileAttributes basicFileAttributes) throws IOException
+		{
+			deleteIfExists(file);
+			return CONTINUE;
+		}
+
+		@Override
+		public FileVisitResult visitFileFailed(@NotNull final Path file, @NotNull final IOException exception)
+		{
+			if (exception instanceof FileSystemLoopException)
+			{
+				return CONTINUE;
+			}
+			throw new IllegalStateException(format("Could not visit file '%1$s' because of '%2$s'", file.toString(), exception.getMessage()), exception);
+		}
+
+		@Override
+		public FileVisitResult postVisitDirectory(@Nullable final Path directory, @Nullable final IOException exception) throws IOException
+		{
+			if (directory != null)
+			{
+				deleteIfExists(directory);
+			}
+			return CONTINUE;
 		}
 	}
 }
